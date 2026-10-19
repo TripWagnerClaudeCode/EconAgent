@@ -76,3 +76,9 @@ def test_every_server_env_pins_log_level(monkeypatch):
     for name, spec in m.build("research")["mcpServers"].items():
         if "env" in spec and name in ("fmp", "econ_gov", "journal", "bls", "newsapi", "alpaca"):
             assert spec["env"].get("FASTMCP_LOG_LEVEL") == "WARNING", name
+
+
+def test_agent_cannot_recompute_or_persist_screens():
+    """The agent is documented as strictly read-only; screening_run_screens writes to Maverick's local database."""
+    assert "screening_run_screens" in m.MAVERICK_HIDDEN and "screening_run_screens" not in m.MAVERICK_READ
+    assert "mcp__maverick__screening_run_screens" in m.tool_policy("research")["disallowed"]

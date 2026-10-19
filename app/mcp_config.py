@@ -181,7 +181,7 @@ MAVERICK_READ = [
     "market_data_get_price_history", "market_data_get_price_history_batch", "market_data_get_quote",
     "market_data_get_stock_fundamentals", "market_data_get_market_overview", "market_data_get_chart_links",
     "screening_get_bullish", "screening_get_bearish", "screening_get_supply_demand", "screening_get_all",
-    "screening_get_by_criteria", "screening_run_screens", "portfolio_compare_tickers",
+    "screening_get_by_criteria", "portfolio_compare_tickers",
     "portfolio_correlation_analysis", "technical_get_rsi_analysis", "technical_get_macd_analysis",
     "technical_get_support_resistance", "technical_get_full_technical_analysis",
 ]
@@ -208,6 +208,7 @@ MAVERICK_HIDDEN = [
     "portfolio_add_position", "portfolio_remove_position", "portfolio_clear_portfolio",
     "portfolio_watchlist_create", "portfolio_watchlist_add", "portfolio_watchlist_remove",
     "portfolio_journal_add_trade", "portfolio_journal_close_trade",
+    "screening_run_screens",   # recomputes + persists screen results in Maverick's local DB; scripts/refresh_universe.py does this, not the agent
 ]
 JOURNAL_WRITE = ["journal_log_idea", "journal_close_idea"]
 # Alpaca's docs-lookup tools pull remote text (untrusted) and add nothing to analysis; hide them.
