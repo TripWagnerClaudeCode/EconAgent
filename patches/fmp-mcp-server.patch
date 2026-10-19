@@ -1,0 +1,45 @@
+diff --git a/src/api/client.py b/src/api/client.py
+index 60bbcd2..f2e912e 100644
+--- a/src/api/client.py
++++ b/src/api/client.py
+@@ -1,3 +1,9 @@
++import logging
++
++# httpx logs every request URL at INFO, and FMP puts the API key in the URL (apikey=...): keep it out of stderr.
++for _n in ("httpx", "httpcore"):
++    logging.getLogger(_n).setLevel(logging.WARNING)
++
+ """
+ Financial Modeling Prep API client
+ """
+@@ -38,9 +44,13 @@ async def fmp_api_request(endpoint: str, params: Dict = None, api_key: str = Non
+             response = await client.get(url, params=params, timeout=30.0)
+             response.raise_for_status()  # Remove await here, httpx Response.raise_for_status() is not a coroutine
+             return response.json()  # Remove await here, httpx Response.json() is not a coroutine
++    # NOTE: str(httpx exception) embeds the full request URL, including apikey=..., and these messages flow into tool
++    # results (the model's context and any saved logs). Report only the status / error type, never the URL.
+     except httpx.HTTPStatusError as e:
+-        return {"error": f"HTTP error: {e.response.status_code}", "message": str(e)}
++        code = e.response.status_code
++        return {"error": f"HTTP error: {code}", "message": f"FMP returned {code} {e.response.reason_phrase} for /{endpoint}"
++                + (" (this endpoint is not included in your FMP plan)" if code in (402, 403) else "")}
+     except httpx.RequestError as e:
+-        return {"error": "Request error", "message": str(e)}
++        return {"error": "Request error", "message": f"{type(e).__name__} while calling /{endpoint}"}
+     except Exception as e:
+-        return {"error": "Unknown error", "message": str(e)}
+\ No newline at end of file
++        return {"error": "Unknown error", "message": f"{type(e).__name__} while calling /{endpoint}"}
+\ No newline at end of file
+diff --git a/src/server.py b/src/server.py
+index 1658e86..72fdb01 100644
+--- a/src/server.py
++++ b/src/server.py
+@@ -44,7 +44,6 @@ from src.prompts.templates import (
+ # Create the MCP server
+ mcp = FastMCP(
+     "FMP Financial Data",
+-    description="Financial data tools and resources powered by Financial Modeling Prep API",
+     dependencies=["httpx"]
+ )
+ 

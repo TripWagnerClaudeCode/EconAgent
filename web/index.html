@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EconAgent</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="top-row">
+    <div class="brand"><span class="dot"></span>EconAgent</div>
+    <nav id="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" data-tab="analyst" class="active">Analyst<kbd>1</kbd></button>
+      <button role="tab" data-tab="macro">Macro<kbd>2</kbd></button>
+      <button role="tab" data-tab="watch">Watchlist<kbd>3</kbd></button>
+      <button role="tab" data-tab="reports">Reports<kbd>4</kbd></button>
+      <button role="tab" data-tab="journal">Journal<kbd>5</kbd></button>
+      <button role="tab" data-tab="system">System<kbd>6</kbd></button>
+    </nav>
+    <div class="meters">
+      <button id="paletteBtn" class="ghost sm" title="Command palette (Ctrl/⌘ K)">Search <kbd>⌘K</kbd></button>
+      <button id="themeBtn" class="ghost sm icon" title="Theme (t)" aria-label="Toggle theme">◐</button>
+      <span class="chip" id="modeChip" title="Only research mode is enabled: no order tools are loaded">Research</span>
+      <span class="usage" id="usage" title="Claude Pro five-hour window"><span class="bar"><i id="usageFill"></i></span><span id="usageText">usage …</span></span>
+    </div>
+  </div>
+  <div class="ticker" id="ticker" aria-label="Live market data">
+    <span class="mkt" id="mktStatus"><i></i><span>market …</span></span>
+    <div class="ticker-items" id="tickerItems"></div>
+    <span class="stamp" id="liveStamp"></span>
+  </div>
+</header>
+
+<main>
+  <!-- ANALYST -->
+  <section id="tab-analyst" class="tab active">
+    <div class="card">
+      <div class="card-head"><h2>Full analysis</h2><span class="muted">Sonnet gathers a sourced data pack, Opus writes the verdict · about 3–5 min</span></div>
+      <textarea id="task" rows="3">Read the current US macro regime, then find up to 3 high-growth US-listed equity opportunities for a 1-3 month horizon with attractive risk/reward. Weigh each idea's potential profit against its downside, and say plainly if little is attractive.</textarea>
+      <div class="row">
+        <label>Candidates <input id="cands" type="number" min="2" max="8" value="5"></label>
+        <label>Max ideas <input id="ideas" type="number" min="1" max="5" value="3"></label>
+        <span class="spacer"></span>
+        <button id="refreshUniverse" class="ghost" title="Loads S&P 500 prices into the screener. No model usage.">Refresh screener</button>
+        <button id="runAnalysis" class="primary">Run analysis <kbd>⌘↵</kbd></button>
+        <button id="cancelJob" class="ghost" hidden>Cancel</button>
+      </div>
+      <div id="notice" class="notice" hidden></div>
+      <div id="progress" class="progress" hidden>
+        <div class="stage-row"><span class="spinner" id="spinner"></span><span id="stageLabel" class="stage"></span></div>
+        <ul id="toolLog"></ul>
+      </div>
+    </div>
+
+    <div class="card chat">
+      <div class="card-head"><h2>Ask the analyst</h2>
+        <span class="row tight"><label>Model <select id="chatModel"><option value="opus">Opus 5.5</option><option value="sonnet">Sonnet 5.5 (faster, cheaper)</option></select></label>
+        <button id="newChat" class="ghost sm">New chat <kbd>n</kbd></button></span></div>
+      <div id="chips" class="chips"></div>
+      <div id="messages" class="messages" aria-live="polite"></div>
+      <div class="composer">
+        <textarea id="chatInput" rows="2" placeholder="Ask about a stock, the macro backdrop, or your watchlist…  ( / to focus · Enter to send · Shift+Enter for a new line )"></textarea>
+        <button id="send" class="primary">Send</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MACRO -->
+  <section id="tab-macro" class="tab">
+    <div class="page-head">
+      <div><h2>Macro</h2><p class="muted" id="macroNote">Click any card for an interactive chart.</p></div>
+      <div class="searchbox"><input id="fredSearch" placeholder="Find any FRED series…  (e.g. copper, mortgage rate)" autocomplete="off" aria-label="Search FRED series"><div id="fredResults" class="dropdown" hidden></div></div>
+      <button id="reloadMacro" class="ghost sm">Reload <kbd>r</kbd></button>
+    </div>
+    <div id="macroRead" class="reads"></div>
+    <div id="macroGroups"></div>
+    <div class="grid2">
+      <div class="card"><div class="card-head"><h3>Treasury yield curve</h3><span class="muted" id="ycNote"></span></div><div id="ycChart"></div><div id="ycLegend" class="legend"></div></div>
+      <div class="card"><div class="card-head"><h3>What changed in the last FOMC statement</h3><span class="muted" id="fedNote"></span></div><div id="fedDiff" class="fed-diff"><p class="muted">Loading…</p></div></div>
+    </div>
+  </section>
+
+  <!-- WATCHLIST -->
+  <section id="tab-watch" class="tab">
+    <div class="page-head">
+      <div><h2>Watchlist</h2><p class="muted">Live quotes refresh every 15 seconds · click a row for a chart</p></div>
+      <form id="watchForm" class="row tight"><input id="watchInput" placeholder="Add symbol, e.g. TSLA" size="18" autocomplete="off" aria-label="Add symbol"><button class="primary sm" type="submit">Add</button></form>
+    </div>
+    <div class="table-wrap"><table id="watchTable"><thead><tr>
+      <th data-sort="symbol">Symbol</th><th class="num" data-sort="last">Last</th><th class="num" data-sort="chg_pct">Day</th><th>1 month</th>
+      <th class="num" data-sort="vol_ann_pct">Vol (ann.)</th><th class="num" data-sort="drawdown_1m_pct">1-mo drawdown</th><th></th></tr></thead><tbody></tbody></table></div>
+    <p class="muted small">Prices from Yahoo via yfinance (may be delayed). Volatility is 1-month realized, annualized.</p>
+  </section>
+
+  <!-- REPORTS -->
+  <section id="tab-reports" class="tab">
+    <div class="split">
+      <aside><h2>Reports</h2><ul id="reportList" class="plain list"></ul></aside>
+      <article>
+        <div class="row tight report-tools"><button id="copyReport" class="ghost sm" disabled>Copy markdown</button><button id="downloadReport" class="ghost sm" disabled>Download .md</button></div>
+        <div id="reportView" class="markdown"><p class="muted">Select a report, or run an analysis.</p></div>
+        <div id="reportEntries"></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- JOURNAL -->
+  <section id="tab-journal" class="tab">
+    <div class="page-head"><div><h2>Prediction journal</h2><p class="muted">Every call is scored against what actually happened.</p></div></div>
+    <div id="calib" class="tiles small"></div>
+    <div id="dueBox"></div>
+    <h3>Open ideas</h3>
+    <div class="table-wrap"><table id="openTable"><thead><tr><th>#</th><th>Symbol</th><th>Dir</th><th class="num">Entry</th><th class="num">Target</th><th class="num">Stop</th><th class="num">Prob.</th><th>Review by</th><th></th></tr></thead><tbody></tbody></table></div>
+    <h3>Closed</h3>
+    <div class="table-wrap"><table id="closedTable"><thead><tr><th>#</th><th>Symbol</th><th>Dir</th><th>Outcome</th><th class="num">Return</th><th>Note</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <!-- SYSTEM -->
+  <section id="tab-system" class="tab">
+    <div class="page-head"><div><h2>System</h2></div></div>
+    <div class="grid2">
+      <div class="card"><h3>Mode</h3>
+        <div class="seg" id="modeSeg"><button class="active" data-mode="research">Research</button><button data-mode="paper" disabled>Paper</button><button data-mode="live" disabled>Live</button></div>
+        <p class="muted">Research mode loads no order tools at all. Paper and live need a per-order approval flow that is not built yet, so they are locked.</p></div>
+      <div class="card"><h3>Kronos track record</h3><div id="kronosBox"></div></div>
+      <div class="card"><h3>Data servers</h3><div id="serverBox"></div></div>
+      <div class="card"><h3>Keys &amp; data</h3><div id="keyBox"></div></div>
+    </div>
+    <div class="card"><div class="card-head"><h3>Keyboard shortcuts</h3><button id="showHelp" class="ghost sm">Show overlay <kbd>?</kbd></button></div><div id="shortcutList" class="kv wide"></div></div>
+  </section>
+</main>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<script src="/static/vendor/marked.min.js"></script>
+<script src="/static/vendor/purify.min.js"></script>
+<script src="/static/chart.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

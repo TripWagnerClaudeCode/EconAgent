@@ -1,0 +1,8 @@
+# name | repository | pinned commit | build
+# Pinned on purpose: these servers receive your API keys, so we only run code we have read at a specific commit.
+# To upgrade one: read the diff, change the commit here, re-run scripts/install_vendors.sh, re-run the tests.
+maverick-mcp   | https://github.com/wshobson/maverick-mcp      | da70d074dcdac5fb21e3b2e6383cfebf391f28b5 | uv
+bls_mcp        | https://github.com/larasrinath/bls_mcp         | 96274b7f5658ee150d0bc4df074774fe05564e54 | npm:build
+newsapi-mcp    | https://github.com/EventRegistry/newsapi-mcp   | ad403db6c768a8d0ebe5d99e89fc3399d638200a | npm:build:bundle
+fmp-mcp-server | https://github.com/cdtait/fmp-mcp-server       | aa4500ad54d68a7eb83527915d4e95fe01a5a72e | pyvenv+patch
+Kronos         | https://github.com/shiyu-coder/Kronos          | 67b630e67f6a18c9e9be918d9b4337c960db1e9a | optional

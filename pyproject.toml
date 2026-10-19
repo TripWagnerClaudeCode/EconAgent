@@ -1,0 +1,42 @@
+[project]
+name = "econagent"
+version = "0.1.0"
+description = "A local economic-forecasting and equity-research analyst: macro data, markets, news and an LLM analyst, driven by your own Claude Code login."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "httpx>=0.27",
+  "mcp[cli]>=1.20,<2",        # FastMCP 1.x API; 2.x renamed it and breaks the custom servers and the FMP server
+  "pydantic>=2.8",
+  "pandas>=2.2",
+  "numpy>=1.26",
+  "yfinance>=0.2.50",
+  "beautifulsoup4>=4.12",
+]
+
+[project.optional-dependencies]
+# Kronos is optional and currently shows no demonstrated edge in our own tests (see README). Skip unless curious.
+kronos = ["torch>=2.2", "einops>=0.8", "huggingface_hub>=0.33", "safetensors>=0.5", "tqdm>=4.66"]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.uv]
+package = false   # an application, not an installable library
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 140
+target-version = "py312"
+extend-exclude = ["vendor", ".venv", "web/vendor"]
+
+[tool.ruff.lint]
+select = ["E9", "F", "B", "S101", "S105", "S106", "S108", "S603", "S607", "S301"]
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S105", "S106"]

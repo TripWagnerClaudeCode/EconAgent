@@ -1,0 +1,24 @@
+# environments / build output
+.venv/
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+
+# third-party code is fetched by scripts/install_vendors.sh, never committed
+vendor/*
+!vendor/README.md
+
+# local state and generated output (may contain your watchlist, analyses, journal, usage and cached API data)
+/data/
+/reports/
+/journal/
+
+# secrets: keys live in the OS keychain or the environment, never in files
+.env
+.env.*
+!config/.env.example
+*.pem
+*.key

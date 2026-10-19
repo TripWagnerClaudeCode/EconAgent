@@ -1,0 +1,21 @@
+name: CI
+on:
+  push: { branches: [main] }
+  pull_request:
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix: { os: [ubuntu-latest, macos-latest] }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Install (core deps only; no API keys, no model, no third-party servers needed)
+        run: uv sync --extra dev --python 3.12
+      - name: No hard-coded secrets
+        run: python3 scripts/check_secrets.py --all
+      - name: Lint
+        run: uvx ruff check app mcp scripts tests
+      - name: Tests (offline)
+        run: .venv/bin/python -m pytest -q
