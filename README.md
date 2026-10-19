@@ -6,6 +6,8 @@
 
 ## What it does
 
+This is the short version. **[docs/CAPABILITIES.md](docs/CAPABILITIES.md) describes every capability in detail**: the agent's report structure and rules, all 125 tools by source, the macro and market features, the journal's scoring, keyboard shortcuts, the HTTP API, and exactly what is *not* built.
+
 | | |
 |---|---|
 | **Analyst agent** | A two-stage pipeline: a fast model (Sonnet) gathers a sourced data pack from ~125 read-only tools, then a stronger model (Opus) writes the report: macro regime, ranked ideas, bear case, drawdown scenario, entry/target/stop, reward-to-risk, a calibrated probability, and "what would change my mind". Plus a chat mode with the same tools. |
@@ -49,7 +51,7 @@ config/keys.sh set FRED_API_KEY       # prompts with hidden input; stored in the
 # ...repeat for the other keys below (names only in config/.env.example)
 
 claude                                # once, to log in (then /exit)
-.venv/bin/python -m pytest            # 51 offline tests
+.venv/bin/python -m pytest            # 52 offline tests
 .venv/bin/python scripts/serve.py     # http://127.0.0.1:8750
 ```
 
